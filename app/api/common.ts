@@ -9,18 +9,19 @@ const DISABLE_GPT4 = !!process.env.DISABLE_GPT4;
 export async function requestOpenai(req: NextRequest) {
   const controller = new AbortController();
   const authValue = req.headers.get("Authorization") ?? "";
-  const openaiPath = `${req.nextUrl.pathname}${req.nextUrl.search}`.replaceAll(
-    "/api/openai/",
-    "",
-  );
-
+  // let openaiPath = `${req.nextUrl.pathname}${req.nextUrl.search}`.replaceAll(
+  //   "/api/openai/",
+  //   "",
+  // );
+  let openaiPath = `${req.nextUrl.pathname}`.replaceAll("/api/openai/", "");
+  openaiPath += "?api-version=2023-08-01-preview";
   let baseUrl = BASE_URL;
 
   if (!baseUrl.startsWith("http")) {
     baseUrl = `${PROTOCOL}://${baseUrl}`;
   }
 
-  if (baseUrl.endsWith('/')) {
+  if (baseUrl.endsWith("/")) {
     baseUrl = baseUrl.slice(0, -1);
   }
 
@@ -31,9 +32,12 @@ export async function requestOpenai(req: NextRequest) {
     console.log("[Org ID]", process.env.OPENAI_ORG_ID);
   }
 
-  const timeoutId = setTimeout(() => {
-    controller.abort();
-  }, 10 * 60 * 1000);
+  const timeoutId = setTimeout(
+    () => {
+      controller.abort();
+    },
+    10 * 60 * 1000,
+  );
 
   const fetchUrl = `${baseUrl}/${openaiPath}`;
   const fetchOptions: RequestInit = {
@@ -44,6 +48,7 @@ export async function requestOpenai(req: NextRequest) {
       ...(process.env.OPENAI_ORG_ID && {
         "OpenAI-Organization": process.env.OPENAI_ORG_ID,
       }),
+      "api-key": "fc9e3e4652a24542ac26bd474812eb63",
     },
     method: req.method,
     body: req.body,
