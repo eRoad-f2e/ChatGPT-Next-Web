@@ -3,7 +3,8 @@ import { trimTopic } from "../utils";
 import Locale, { getLang } from "../locales";
 import { showToast } from "../components/ui-lib";
 import { ModelConfig, ModelType, useAppConfig } from "./config";
-import { createEmptyMask, Mask } from "./mask";
+import { createEmptyMask, useMaskStore, Mask } from "./mask";
+
 import {
   DEFAULT_INPUT_TEMPLATE,
   DEFAULT_SYSTEM_TEMPLATE,
@@ -75,6 +76,7 @@ function createEmptySession(): ChatSession {
     lastUpdate: Date.now(),
     lastSummarizeIndex: 0,
 
+    // mask: createEmptyMask(),
     mask: createEmptyMask(),
   };
 }
@@ -139,7 +141,34 @@ function fillTemplateWith(input: string, modelConfig: ModelConfig) {
 }
 
 const DEFAULT_CHAT_STATE = {
-  sessions: [createEmptySession()],
+  // sessions: [createEmptySession()],
+
+  sessions: [
+    (() => {
+      debugger;
+      let session = createEmptySession();
+      let maskStore = useMaskStore.getState();
+      let list = maskStore.getAll();
+      if (list && list.length > 0) {
+        let mask = list[0];
+        if (mask) {
+          const config = useAppConfig.getState();
+          const globalModelConfig = config.modelConfig;
+
+          session.mask = {
+            ...mask,
+            modelConfig: {
+              ...globalModelConfig,
+              ...mask.modelConfig,
+            },
+          };
+          session.mask = mask;
+          session.topic = mask.name;
+        }
+      }
+      return session;
+    })(),
+  ],
   currentSessionIndex: 0,
 };
 
@@ -239,7 +268,22 @@ export const useChatStore = createPersistStore(
 
         if (deletingLastSession) {
           nextIndex = 0;
-          sessions.push(createEmptySession());
+          // sessions.push(createEmptySession());
+
+          debugger;
+          const session = createEmptySession();
+          // const masks = useMaskStore.getState().first();
+          // if (masks && masks.length>0) {
+          //   const mask = masks[0];
+          //   session.mask = {
+          //     ...mask,
+          //     modelConfig: {
+          //       ...mask.modelConfig,
+          //     },
+          //   };
+          //   session.topic = mask.name;
+          // }
+          sessions.push(session);
         }
 
         // for undo delete action
@@ -401,17 +445,18 @@ export const useChatStore = createPersistStore(
 
         // system prompts, to get close to OpenAI Web ChatGPT
         const shouldInjectSystemPrompts = modelConfig.enableInjectSystemPrompts;
-        const systemPrompts = shouldInjectSystemPrompts
-          ? [
-              createMessage({
-                role: "system",
-                content: fillTemplateWith("", {
-                  ...modelConfig,
-                  template: DEFAULT_SYSTEM_TEMPLATE,
-                }),
-              }),
-            ]
-          : [];
+        // const systemPrompts = shouldInjectSystemPrompts
+        //   ? [
+        //       createMessage({
+        //         role: "system",
+        //         content: fillTemplateWith("", {
+        //           ...modelConfig,
+        //           template: DEFAULT_SYSTEM_TEMPLATE,
+        //         }),
+        //       }),
+        //     ]
+        //   : [];
+        const systemPrompts: any[] = [];
         if (shouldInjectSystemPrompts) {
           console.log(
             "[Global System Prompt] ",

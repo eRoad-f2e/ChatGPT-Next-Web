@@ -91,6 +91,7 @@ export function ChatItem(props: {
 }
 
 export function ChatList(props: { narrow?: boolean }) {
+  debugger;
   const [sessions, selectedIndex, selectSession, moveSession] = useChatStore(
     (state) => [
       state.sessions,

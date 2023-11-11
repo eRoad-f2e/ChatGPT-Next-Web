@@ -600,6 +600,7 @@ export function EditMessageModal(props: { onClose: () => void }) {
 }
 
 function _Chat() {
+  debugger;
   type RenderMessage = ChatMessage & { preview?: boolean };
 
   const chatStore = useChatStore();
@@ -1113,6 +1114,7 @@ function _Chat() {
       >
         {messages.map((message, i) => {
           const isUser = message.role === "user";
+          const isSystem = message.role === "system";
           const isContext = i < context.length;
           const showActions =
             i > 0 &&
@@ -1121,8 +1123,10 @@ function _Chat() {
           const showTyping = message.preview || message.streaming;
 
           const shouldShowClearContextDivider = i === clearContextIndex - 1;
-
-          return (
+          console.log(message.id);
+          return isSystem ? (
+            <div key={message.id}></div>
+          ) : (
             <Fragment key={message.id}>
               <div
                 className={
@@ -1144,7 +1148,9 @@ function _Chat() {
                             chatStore.updateCurrentSession((session) => {
                               const m = session.mask.context
                                 .concat(session.messages)
-                                .find((m) => m.id === message.id);
+                                .find(
+                                  (m: { id: string }) => m.id === message.id,
+                                );
                               if (m) {
                                 m.content = newMessage;
                               }
@@ -1228,11 +1234,11 @@ function _Chat() {
                     />
                   </div>
 
-                  <div className={styles["chat-message-action-date"]}>
+                  {/* <div className={styles["chat-message-action-date"]}>
                     {isContext
                       ? Locale.Chat.IsContext
                       : message.date.toLocaleString()}
-                  </div>
+                  </div> */}
                 </div>
               </div>
               {shouldShowClearContextDivider && <ClearContextDivider />}
@@ -1302,6 +1308,7 @@ function _Chat() {
 }
 
 export function Chat() {
+  debugger;
   const chatStore = useChatStore();
   const sessionIndex = chatStore.currentSessionIndex;
   return <_Chat key={sessionIndex}></_Chat>;

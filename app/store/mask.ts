@@ -74,7 +74,12 @@ export const useMaskStore = createPersistStore(
       set(() => ({ masks }));
       get().markUpdate();
     },
-
+    first() {
+      // const masks = get().masks;
+      // if(masks  && masks.length>0){
+      //   return masks[0]
+      // }
+    },
     get(id?: string) {
       return get().masks[id ?? 1145141919810];
     },
